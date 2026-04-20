@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soccer AI Performance Lab</title>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/object_detection"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <style>
+        body { font-family: sans-serif; background: #1a1a1a; color: white; text-align: center; }
+        .container { position: relative; display: inline-block; }
+        canvas { position: absolute; top: 0; left: 0; pointer-events: none; }
+        video { max-width: 100%; border-radius: 8px; }
+        #feedback-panel { margin-top: 20px; padding: 20px; background: #333; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <h1>Soccer AI Performance Analyzer</h1>
+    <input type="file" id="videoUpload" accept="video/*">
+    <div class="container">
+        <video id="soccerVideo" controls></video>
+        <canvas id="overlay"></canvas>
+    </div>
+    <div id="feedback-panel">
+        <h3>Live Performance Feedback</h3>
+        <p id="stats">Upload a video to start analysis...</p>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
