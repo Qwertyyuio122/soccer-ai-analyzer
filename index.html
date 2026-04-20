@@ -3,27 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Soccer AI Performance Lab</title>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/object_detection"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <title>Soccer AI Pro</title>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0"></script>
     <style>
-        body { font-family: sans-serif; background: #1a1a1a; color: white; text-align: center; }
-        .container { position: relative; display: inline-block; }
-        canvas { position: absolute; top: 0; left: 0; pointer-events: none; }
-        video { max-width: 100%; border-radius: 8px; }
-        #feedback-panel { margin-top: 20px; padding: 20px; background: #333; border-radius: 8px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #121212; color: white; margin: 0; padding: 20px; }
+        .wrapper { max-width: 900px; margin: 0 auto; }
+        .video-stack { position: relative; width: 100%; background: #000; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        video { width: 100%; display: block; }
+        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        .controls { margin-top: 20px; background: #1e1e1e; padding: 20px; border-radius: 12px; }
+        #status { color: #ffcc00; font-weight: bold; margin-bottom: 10px; }
+        #feedback { background: #2a2a2a; padding: 15px; border-left: 5px solid #00ff88; text-align: left; margin-top: 10px; min-height: 50px; }
     </style>
 </head>
 <body>
-    <h1>Soccer AI Performance Analyzer</h1>
-    <input type="file" id="videoUpload" accept="video/*">
-    <div class="container">
-        <video id="soccerVideo" controls></video>
-        <canvas id="overlay"></canvas>
-    </div>
-    <div id="feedback-panel">
-        <h3>Live Performance Feedback</h3>
-        <p id="stats">Upload a video to start analysis...</p>
+    <div class="wrapper">
+        <h2>Soccer Performance AI</h2>
+        <div id="status">Status: Initializing AI...</div>
+        
+        <div class="video-stack">
+            <video id="soccerVideo" controls crossorigin="anonymous"></video>
+            <canvas id="overlay"></canvas>
+        </div>
+
+        <div class="controls">
+            <input type="file" id="videoUpload" accept="video/*">
+            <div id="feedback">Performance Data: Waiting for video play...</div>
+        </div>
     </div>
     <script src="app.js"></script>
 </body>

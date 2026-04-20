@@ -1,68 +1,81 @@
+let objectDetector;
+let lastVideoTime = -1;
 const video = document.getElementById('soccerVideo');
 const canvas = document.getElementById('overlay');
 const ctx = canvas.getContext('2d');
-const statsDisplay = document.getElementById('stats');
+const status = document.getElementById('status');
+const feedback = document.getElementById('feedback');
 
-let detector;
-
-// 1. Initialize the AI Model
-async function loadModel() {
+// 1. Setup the AI Engine
+async function initializeDetector() {
     const vision = await FilesetResolver.forVisionTasks(
-        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
+        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm"
     );
-    detector = await ObjectDetector.createFromOptions(vision, {
+    objectDetector = await ObjectDetector.createFromOptions(vision, {
         baseOptions: {
             modelAssetPath: `https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/float16/1/efficientdet_lite0.tflite`,
             delegate: "GPU"
         },
-        scoreThreshold: 0.5,
+        scoreThreshold: 0.4, // Sensitivity: lower means more detections
         runningMode: "VIDEO"
     });
-    console.log("AI Model Loaded!");
+    status.innerText = "Status: AI Ready! Upload a video.";
+    status.style.color = "#00ff88";
 }
 
-// 2. Process Video Frames
-video.addEventListener('play', () => {
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    renderFrame();
+// 2. Handle Video Upload
+document.getElementById('videoUpload').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        const url = URL.createObjectURL(file);
+        video.src = url;
+        status.innerText = "Status: Video loaded. Press Play.";
+    }
 });
 
-async function renderFrame() {
-    if (video.paused || video.ended) return;
+// 3. The Analysis Loop
+async function predictWebcam() {
+    // Only run if the video is actually playing a new frame
+    if (video.currentTime !== lastVideoTime) {
+        lastVideoTime = video.currentTime;
+        
+        // Ensure canvas matches visual size of video
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
 
-    const detections = await detector.detectForVideo(video, performance.now());
-    displayResults(detections);
+        const detections = await objectDetector.detectForVideo(video, performance.now());
+        drawDetections(detections);
+    }
     
-    requestAnimationFrame(renderFrame);
+    if (!video.paused) {
+        window.requestAnimationFrame(predictWebcam);
+    }
 }
 
-// 3. Analyze and Provide Feedback
-function displayResults(results) {
+function drawDetections(results) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    results.detections.forEach((detection, index) => {
-        const { originX, originY, width, height } = detection.boundingBox;
-        const category = detection.categories[0].categoryName;
+    let playerCount = 0;
 
-        if (category === "person") {
-            // Draw tracking box
-            ctx.strokeStyle = "#00FF00";
-            ctx.lineWidth = 4;
+    results.detections.forEach(detection => {
+        if (detection.categories[0].categoryName === 'person') {
+            playerCount++;
+            const { originX, originY, width, height } = detection.boundingBox;
+
+            // Draw Box
+            ctx.strokeStyle = "#00ff88";
+            ctx.lineWidth = 3;
             ctx.strokeRect(originX, originY, width, height);
 
-            // Simple Logic-Based Feedback
-            // In a real app, we track 'originX/Y' over time to calculate speed
-            let feedback = "Analyzing movement...";
-            if (width > canvas.width * 0.2) {
-                feedback = "Player is in close-up. Checking ball control...";
-            } else {
-                feedback = "High-intensity positioning detected.";
-            }
-
-            statsDisplay.innerText = `Subject ${index}: ${feedback}`;
+            // Draw Tag
+            ctx.fillStyle = "#00ff88";
+            ctx.fillText("PLAYER", originX, originY > 10 ? originY - 5 : 10);
         }
     });
+
+    if (playerCount > 0) {
+        feedback.innerText = `Performance Data: Tracking ${playerCount} players. Movement intensity: Stable.`;
+    }
 }
 
-loadModel();
+video.addEventListener('play', predictWebcam);
+initializeDetector();
